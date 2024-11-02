@@ -7,7 +7,7 @@
 
 static Ihandle *inboundCheckbox, *outboundCheckbox, *chanceInput;
 
-static volatile short dropEnabled = 0,
+static volatile short dropEnabled = 1,
     dropInbound = 1, dropOutbound = 1,
     chance = 1000; // [0-10000]
 
@@ -22,7 +22,7 @@ static Ihandle* dropSetupUI() {
     );
 
     IupSetAttribute(chanceInput, "VISIBLECOLUMNS", "4");
-    IupSetAttribute(chanceInput, "VALUE", "10.0");
+    IupSetAttribute(chanceInput, "VALUE", "45.0");
     IupSetCallback(chanceInput, "VALUECHANGED_CB", uiSyncChance);
     IupSetAttribute(chanceInput, SYNCED_VALUE, (char*)&chance);
     IupSetCallback(inboundCheckbox, "ACTION", (Icallback)uiSyncToggle);

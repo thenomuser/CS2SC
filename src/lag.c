@@ -7,15 +7,15 @@
 #define KEEP_AT_MOST 2000
 // send FLUSH_WHEN_FULL packets when buffer is full
 #define FLUSH_WHEN_FULL 800
-#define LAG_DEFAULT 50
+#define LAG_DEFAULT 650
 
 // don't need a chance
 static Ihandle *inboundCheckbox, *outboundCheckbox, *timeInput;
 
-static volatile short lagEnabled = 0,
+static volatile short lagEnabled = 1,
     lagInbound = 1,
     lagOutbound = 1,
-    lagTime = LAG_DEFAULT; // default for 50ms
+    lagTime = LAG_DEFAULT; // default for 650ms
 
 static PacketNode lagHeadNode = {0}, lagTailNode = {0};
 static PacketNode *bufHead = &lagHeadNode, *bufTail = &lagTailNode;

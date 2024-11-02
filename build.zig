@@ -135,6 +135,7 @@ pub fn build(b: *std.build.Builder) void {
     exe.linkSystemLibrary("comdlg32");
     exe.linkSystemLibrary("uuid");
     exe.linkSystemLibrary("ole32");
+    exe.subsystem = .Windows;
 
     const exe_install_step = b.addInstallArtifact(exe);  
     if (conf == .Ship)

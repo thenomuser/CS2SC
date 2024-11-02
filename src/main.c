@@ -119,6 +119,38 @@ EAT_SPACE:  while (isspace(*current)) { ++current; }
     }
 }
 
+void RegisterMyHotKey(HWND hwnd) {
+    if (!RegisterHotKey(hwnd, VK_F12, MOD_ALT, VK_F12)) {
+        char buf[100] = { 0 };
+        sprintf(buf, "Failed to register hotkey(%lu).", GetLastError());
+        MessageBox(NULL, buf, "Error", MB_OK);
+    }
+}
+
+// Message processing function
+LRESULT CALLBACK DialogProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
+    switch (msg) {
+        case WM_HOTKEY:
+            switch (wp) {
+                case VK_F12: {
+                    const char *title = IupGetAttribute(filterButton, "TITLE");
+                    if (strcmp(title, "Start") == 0) {
+                        uiStartCb(NULL);
+                    } else {
+                        uiStopCb(NULL);
+                    }
+                }
+                break;
+            }
+            break;
+
+        case WM_CLOSE:
+            TerminateProcess(GetCurrentProcess(), 0);
+            break;
+    }
+    return DefWindowProc(hwnd, msg, wp, lp);
+}
+
 void init(int argc, char* argv[]) {
     UINT ix;
     Ihandle *topVbox, *bottomVbox, *dialogVBox, *controlHbox;
@@ -279,6 +311,11 @@ void cleanup() {
 
     IupClose();
     endTimePeriod(); // try close if not closing
+
+    // Get the window handle
+    HWND hwnd = (HWND)IupGetAttribute(dialog, "HWND");
+
+    UnregisterHotKey(hwnd, VK_F12);
 }
 
 // ui logics
@@ -315,6 +352,32 @@ static BOOL checkIsRunning() {
     return FALSE;
 }
 
+static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
+    UNREFERENCED_PARAMETER(lParam);
+    char className[256] = { 0 };
+    GetClassNameA(hwnd, className, sizeof(className));
+    if (strcmp(className, "Button") == 0) {
+        char windowText[256] = { 0 };
+        GetWindowText(hwnd, windowText, _countof(windowText) - 1);
+        if (strcmp(windowText, "Lag") == 0 ||
+            strcmp(windowText, "Drop") == 0) {
+            SendMessage(hwnd, BM_CLICK, 0, 0);
+        }
+    } else if (strcmp(className, "ComboBox") == 0) {
+        int itemCount = SendMessage(hwnd, CB_GETCOUNT, 0, 0);
+
+        // Iterate through the items to find the matching text
+        for (int i = 0; i < itemCount; ++i) {
+            char itemText[256] = { 0 };
+            SendMessage(hwnd, CB_GETLBTEXT, i, itemText);
+            if (strcmp(itemText, "all receiving packets") == 0) {
+                SendMessage(hwnd, CB_SETCURSEL, i, 0);
+                SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), CBN_SELCHANGE), (LPARAM)hwnd);
+            }
+        }
+    }
+    return TRUE;
+}
 
 static int uiOnDialogShow(Ihandle *ih, int state) {
     // only need to process on show
@@ -344,6 +407,18 @@ static int uiOnDialogShow(Ihandle *ih, int state) {
         return IUP_CLOSE;
     }
 #endif
+
+    // Get the window handle
+    HWND hwnd = (HWND)IupGetAttribute(dialog, "HWND");
+
+    // Register the hotkey
+    RegisterMyHotKey(hwnd);
+
+    // Set the message processing function
+    SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)DialogProc);
+
+    // Enumerate child windows
+    EnumChildWindows(hwnd, EnumChildProc, NULL);
 
     // try elevate and decides whether to exit
     exit = tryElevate(hWnd, parameterized);
