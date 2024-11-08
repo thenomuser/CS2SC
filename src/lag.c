@@ -7,7 +7,7 @@
 #define KEEP_AT_MOST 2000
 // send FLUSH_WHEN_FULL packets when buffer is full
 #define FLUSH_WHEN_FULL 800
-#define LAG_DEFAULT 650
+#define LAG_DEFAULT 200
 
 // don't need a chance
 static Ihandle *inboundCheckbox, *outboundCheckbox, *timeInput;

@@ -311,10 +311,6 @@ void cleanup() {
 
     IupClose();
     endTimePeriod(); // try close if not closing
-
-    // Get the window handle
-    HWND hwnd = (HWND)IupGetAttribute(dialog, "HWND");
-
     UnregisterHotKey(hwnd, VK_F12);
 }
 

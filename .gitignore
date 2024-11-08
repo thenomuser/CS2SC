@@ -3,6 +3,7 @@ build/
 tmp/
 zig-cache/
 zig-out/
+zig-windows-x86_64-0.9.0/
 etc/clumsy.aps
 *.swp
 obj_vs
